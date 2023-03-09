@@ -20,8 +20,17 @@ def get_last_update():
         return last_update
     return False
 
-def sendMessage():
-    pass
+def sendMessage(chat_id, text):
+    # url for sending message
+    url_for_sending_msg = BASE_URL + "sendMessage"
+    # qurey parameters for resquest
+    payload = {
+        "chat_id": chat_id,
+        "text": text
+    }
+    # send message
+    response = requests.get(url_for_sending_msg, params=payload)
+    return response.status_code
 
 def main():
     # for last update id
@@ -37,7 +46,8 @@ def main():
             chat_id = curr_update['message']['chat']['id']
             text = curr_update['message']['text']
             print(chat_id, text)
-
+            # send message
+            sendMessage(chat_id, text)
             last_update_id = curr_update_id
         
         time.sleep(1)
