@@ -32,6 +32,18 @@ def sendMessage(chat_id, text):
     response = requests.get(url_for_sending_msg, params=payload)
     return response.status_code
 
+def sendSticker(chat_id, sticker):
+    # url for sending message
+    url_for_sending_msg = BASE_URL + "sendSticker"
+    # qurey parameters for resquest
+    payload = {
+        "chat_id": chat_id,
+        "sticker": sticker
+    }
+    # send message
+    response = requests.get(url_for_sending_msg, params=payload)
+    return response.status_code
+
 def main():
     # for last update id
     last_update_id = -1
@@ -42,12 +54,17 @@ def main():
         curr_update_id = curr_update['update_id']
         # check new update
         if last_update_id != curr_update_id:
+            last_message = curr_update['message']
             # get data for send message
-            chat_id = curr_update['message']['chat']['id']
-            text = curr_update['message']['text']
-            print(chat_id, text)
-            # send message
-            sendMessage(chat_id, text)
+            chat_id = last_message['chat']['id']
+            text = last_message.get('text')
+            if text:
+                # send message
+                sendMessage(chat_id, text)
+            sticker = last_message.get('sticker')
+            if sticker:
+                # send Sticker
+                sendSticker(chat_id, sticker)
             last_update_id = curr_update_id
         
         time.sleep(1)
