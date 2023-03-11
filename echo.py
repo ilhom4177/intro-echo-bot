@@ -104,4 +104,4 @@ while True:
         main(chat_id, text, photo, emoji, sticker, video, audio, voice)
         s = update_id
     
-    time.sleep(0.1)
+    time.sleep(1)
