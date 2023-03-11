@@ -1,73 +1,107 @@
-import requests
-import time
+import json, requests, time
 
-TOKEN = '6097521187:AAHbPqQPSlFP54uT-Sj6MdnJpeBB_5Idsmg'
-BASE_URL = f'https://api.telegram.org/bot{TOKEN}/'
+TOKIN = '6120715010:AAEy_jm_fXcAqxRtRT_vJiKPL3tXtiGcNLQ'
 
 def get_last_update():
-    # make url for getupdates
-    url_for_getupdates = BASE_URL + "getUpdates"
-    # meke request
-    response = requests.get(url_for_getupdates)
-    # check rsponse status
-    if response.status_code == 200:
-        # get data from response as dict
-        data = response.json()
-        # get result
-        result = data['result']
-        # get last update
-        last_update = result[-1]
-        return last_update
-    return False
+    url = f'https://api.telegram.org/bot{TOKIN}/getUpdates'
+    data = requests.get(url)
+    return data.json()
 
 def sendMessage(chat_id, text):
-    # url for sending message
-    url_for_sending_msg = BASE_URL + "sendMessage"
-    # qurey parameters for resquest
-    payload = {
-        "chat_id": chat_id,
-        "text": text
-    }
-    # send message
-    response = requests.get(url_for_sending_msg, params=payload)
-    return response.status_code
+    url = f'https://api.telegram.org/bot{TOKIN}/sendMessage'
+    data = requests.get(url, params={'chat_id':chat_id, 'text':text})
+    return data.json()
+
+def sendDocument(chat_id, text):
+    url = f'https://api.telegram.org/bot{TOKIN}/sendDocument'
+    data = requests.get(url, params={'chat_id':chat_id, 'text':document})
+    return data.json()
+
+def sendPhoto(chat_id, photo):
+    url = f'https://api.telegram.org/bot{TOKIN}/sendPhoto'
+    data = requests.get(url, params={'chat_id':chat_id, 'photo':photo})
+    return data.json()
+
+def sendDice(chat_id, emoji):
+    url = f'https://api.telegram.org/bot{TOKIN}/sendDice'
+    data = requests.get(url, params={'chat_id':chat_id, 'emoji':emoji})
+    return data.json()
 
 def sendSticker(chat_id, sticker):
-    # url for sending message
-    url_for_sending_msg = BASE_URL + "sendSticker"
-    # qurey parameters for resquest
-    payload = {
-        "chat_id": chat_id,
-        "sticker": sticker
-    }
-    # send message
-    response = requests.get(url_for_sending_msg, params=payload)
-    return response.status_code
+    url = f'https://api.telegram.org/bot{TOKIN}/sendSticker'
+    data = requests.get(url, params={'chat_id':chat_id, 'sticker':sticker})
+    return data.json()
 
-def main():
-    # for last update id
-    last_update_id = -1
-    while True:
-        # current update
-        curr_update = get_last_update()
-        # current update id
-        curr_update_id = curr_update['update_id']
-        # check new update
-        if last_update_id != curr_update_id:
-            last_message = curr_update['message']
-            # get data for send message
-            chat_id = last_message['chat']['id']
-            text = last_message.get('text')
-            if text:
-                # send message
-                sendMessage(chat_id, text)
-            sticker = last_message.get('sticker')
-            if sticker:
-                # send Sticker
-                sendSticker(chat_id, sticker)
-            last_update_id = curr_update_id
-        
-        time.sleep(1)
+def sendVideo(chat_id, video):
+    url = f'https://api.telegram.org/bot{TOKIN}/sendVideo'
+    data = requests.get(url, params={'chat_id':chat_id, 'video':video})
+    return data.json()
+
+def sendAudio(chat_id, audio):
+    url = f'https://api.telegram.org/bot{TOKIN}/sendAudio'
+    data = requests.get(url, params={'chat_id':chat_id, 'audio':audio})
+    return data.json()
+
+def sendVoice(chat_id, voice):
+    url = f'https://api.telegram.org/bot{TOKIN}/sendVoice'
+    data = requests.get(url, params={'chat_id':chat_id, 'voice':voice})
+    return data.json()
 
 
-main()
+def main(chat_id, text, photo, emoji, sticker, video, audio, voice):
+   
+    if text:
+        sendMessage(chat_id, text)
+    elif photo:
+        sendPhoto(chat_id, photo)
+    elif emoji:
+        sendDice(chat_id, emoji)
+    elif sticker:
+        sendSticker(chat_id, sticker)
+    elif video:
+        sendVideo(chat_id, video)
+    elif audio:
+        sendAudio(chat_id, audio)
+    elif voice:
+        sendVoice(chat_id, voice)
+   
+
+def getData(data):
+    data = data['result'][-1]
+    update_id = data['update_id']
+    chat_id = data['message']['from']['id']
+
+    text = data['message'].get('text')
+    document = data['message'].get('document')
+    photo = data['message'].get('photo')
+    emoji = data['message'].get('dice')
+    sticker = data['message'].get('sticker')
+    video = data['message'].get('video')
+    audio = data['message'].get('audio')
+    voice = data['message'].get('voice')
+
+
+    if voice:
+        voice = voice['file_id']
+    if video:
+        video = video['file_id']
+    if audio:
+        audio = audio['file_id']
+    if sticker:
+        sticker = sticker['file_id']
+    if emoji:
+        emoji = emoji['emoji']
+    
+    if photo:
+        photo = photo[0]['file_id']
+    return update_id, chat_id, text,photo, emoji, sticker, video, audio, voice
+
+s = ''
+while True:
+    data = getData(get_last_update())
+    update_id, chat_id,  text, photo, emoji, sticker, video, audio, voice = data
+    if s != update_id:
+        main(chat_id, text, photo, emoji, sticker, video, audio, voice)
+        s = update_id
+    
+    time.sleep(0.1)
